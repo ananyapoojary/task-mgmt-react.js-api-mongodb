@@ -1,25 +1,26 @@
-import React, { useState } from "react";
-import axios from "axios";
+// Add a new task
+const addTask = async () => {
+    if (!newTask.title.trim()) return; // Prevent empty tasks
+    try {
+        // Send task data to backend API
+        await axios.post("http://localhost:5000/tasks", newTask);
 
-const AddTask = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+        // Update the state directly without fetching from the backend
+        setTasks((prevTasks) => [
+            ...prevTasks,
+            { ...newTask, _id: Math.random().toString() } // Add new task to tasks state
+        ]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newTask = { title, description };
-    axios.post("http://localhost:5000/api/tasks", newTask)
-      .then(res => console.log(res.data))
-      .catch(err => console.log(err));
-  };
+        // Reset the new task form
+        setNewTask({
+            title: "",
+            description: "",
+            dueDate: "",
+            status: "To-Do",
+            priority: "Medium"
+        });
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-      <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-      <button type="submit">Add Task</button>
-    </form>
-  );
+    } catch (error) {
+        console.error("Error adding task:", error);
+    }
 };
-
-export default AddTask;
