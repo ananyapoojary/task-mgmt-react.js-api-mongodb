@@ -1,26 +1,28 @@
-// Add a new task
-const addTask = async () => {
-    if (!newTask.title.trim()) return; // Prevent empty tasks
-    try {
-        // Send task data to backend API
-        await axios.post("http://localhost:5000/tasks", newTask);
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
+import { ADD_TASK } from "../graphql/mutations";
+import { GET_TASKS } from "../graphql/queries";
 
-        // Update the state directly without fetching from the backend
-        setTasks((prevTasks) => [
-            ...prevTasks,
-            { ...newTask, _id: Math.random().toString() } // Add new task to tasks state
-        ]);
+const AddTask = () => {
+  const [task, setTask] = useState({ title: "", description: "", dueDate: "", status: "To-Do", priority: "Medium" });
 
-        // Reset the new task form
-        setNewTask({
-            title: "",
-            description: "",
-            dueDate: "",
-            status: "To-Do",
-            priority: "Medium"
-        });
+  const [addTask] = useMutation(ADD_TASK, {
+    refetchQueries: [{ query: GET_TASKS }],
+  });
 
-    } catch (error) {
-        console.error("Error adding task:", error);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addTask({ variables: task });
+    setTask({ title: "", description: "", dueDate: "", status: "To-Do", priority: "Medium" });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="text" placeholder="Title" value={task.title} onChange={e => setTask({ ...task, title: e.target.value })} required />
+      <textarea placeholder="Description" value={task.description} onChange={e => setTask({ ...task, description: e.target.value })}></textarea>
+      <button type="submit">Add Task</button>
+    </form>
+  );
 };
+
+export default AddTask;
